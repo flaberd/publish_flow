@@ -129,7 +129,23 @@ jobs:
               sleep 3
             done
 
-            docker compose --env-file .deploy.env exec -T app php artisan migrate --force
+            # Retried on top of the healthcheck/depends_on gate, not instead
+            # of it: on a first-ever deploy against a brand-new mysql volume,
+            # MySQL's own healthcheck can briefly report healthy before the
+            # real, TCP-listening server replaces its bootstrap instance,
+            # which previously made this fail immediately with "Connection
+            # refused" on a fresh deploy.
+            for i in $(seq 1 10); do
+              if docker compose --env-file .deploy.env exec -T app php artisan migrate --force; then
+                break
+              fi
+              if [ "$i" -eq 10 ]; then
+                echo "migrate --force failed after 10 attempts" >&2
+                exit 1
+              fi
+              sleep 5
+            done
+
             docker compose --env-file .deploy.env exec -T app php artisan optimize
 
             # Deliberately nothing else here: no `down`, no `-v`, no image

@@ -94,7 +94,17 @@ services:
       # `$` — it must NOT be interpolated by Compose itself (that would need
       # the secret in .deploy.env), only by the container's own shell, which
       # gets MYSQL_ROOT_PASSWORD from env_file at runtime.
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      #
+      # -h 127.0.0.1 (not `localhost`) is deliberate: `localhost` makes the
+      # mysql client connect over the local unix socket, which comes up
+      # during the official image's temporary bootstrap instance on a first
+      # boot with an empty volume — before the real, TCP-listening mysqld is
+      # up. That made this healthcheck (and therefore `depends_on:
+      # condition: service_healthy`) pass too early, and `app` hit
+      # "Connection refused" on mysql:3306 during the first-ever deploy.
+      # Forcing TCP here means the healthcheck only passes once the real
+      # server is actually reachable the same way other containers reach it.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
       interval: 5s
       timeout: 5s
       retries: 20
