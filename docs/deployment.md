@@ -85,6 +85,30 @@ Redis у стеку немає.
 
 ## 7. Initial EC2 setup (одноразово)
 
+**Мінімальний розмір інстансу: `t3.small` (2GB RAM).** `t3.micro`/`t2.micro`
+(1GB) перевірено не вистачає — MySQL + 3 PHP-FPM контейнери (app/queue/
+scheduler) + nginx одночасно займають майже весь 1GB без жодного запасу,
+без swap система йде в OOM ще на старті, MySQL не встигає стабільно
+піднятись → `Connection refused`/`Access denied` на перших деплоях.
+`t3.medium` (4GB) — комфортніший запас, якщо не критично +$.
+
+**Важливо — заповнюй `.env` (крок 4) ДО першого `docker compose up`.**
+`MYSQL_DATABASE`/`MYSQL_USER`/`MYSQL_PASSWORD` застосовуються офіційним
+MySQL-образом лише один раз — при ініціалізації **порожнього**
+`mysql-data` volume. Якщо запустити стек із заглушками/неповним `.env`, а
+потім виправити значення — БД і юзер уже НЕ переініціалізуються, і
+`DB_PASSWORD`/`DB_USERNAME` з оновленого `.env` просто не збігатимуться з
+тим, що реально в MySQL (`Access denied`). Виправити без втрати даних:
+```bash
+DB_PASSWORD=$(grep -E '^DB_PASSWORD=' .env | cut -d= -f2-)
+MYSQL_ROOT_PASSWORD=$(grep -E '^MYSQL_ROOT_PASSWORD=' .env | cut -d= -f2-)
+docker compose --env-file .deploy.env exec -T mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" \
+  -e "CREATE USER IF NOT EXISTS 'publish_flow'@'%' IDENTIFIED BY '$DB_PASSWORD'; GRANT ALL PRIVILEGES ON publish_flow.* TO 'publish_flow'@'%'; FLUSH PRIVILEGES;"
+```
+(або, якщо реальних даних ще нема, простіше видалити volume `mysql-data`
+вручну й дати MySQL переініціалізуватись начисто — але це осмислена дія
+самого оператора, ніколи не частина деплой-пайплайна.)
+
 ```bash
 # 1. Docker Engine + Compose plugin (Ubuntu 22.04/24.04)
 curl -fsSL https://get.docker.com | sh
