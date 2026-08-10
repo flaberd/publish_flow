@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect('/dashboard'))
-    ->middleware('auth');
+Route::livewire('/', 'pages::dashboard')
+    ->middleware('auth')
+    ->name('dashboard');
 
 Route::livewire('/login', 'pages::login')
     ->middleware('guest')
@@ -18,7 +19,3 @@ Route::post('/logout', function () {
 
     return redirect('/login');
 })->middleware('auth')->name('logout');
-
-Route::livewire('/dashboard', 'pages::dashboard')
-    ->middleware('auth')
-    ->name('dashboard');

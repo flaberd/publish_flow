@@ -40,7 +40,7 @@ new class extends Component
         RateLimiter::clear($throttleKey);
         request()->session()->regenerate();
 
-        $this->redirect('/dashboard', navigate: true);
+        $this->redirect('/', navigate: true);
     }
 };
 ?>
