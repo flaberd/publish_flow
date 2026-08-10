@@ -53,6 +53,12 @@ ARG APP_GID=1000
 # libraries the compiled extensions link against, since Debian package names
 # for the runtime libs vary by release. Trading a larger image for a build
 # that doesn't silently break gd/zip/intl at runtime.
+#
+# opcache is installed in its own docker-php-ext-install call, after the
+# rest: bundled into the combined -j$(nproc) install with the others it
+# intermittently fails at `make install` with "cp: cannot stat 'modules/*'"
+# (opcache's out-of-tree extension build racing the others under parallel
+# make) — isolating it avoids that.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libzip-dev \
         libpng-dev \
@@ -70,7 +76,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gd \
         zip \
         intl \
-        opcache \
+    && docker-php-ext-install opcache \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-app.ini
