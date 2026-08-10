@@ -3,9 +3,8 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => redirect('/dashboard'))
+    ->middleware('auth');
 
 Route::livewire('/login', 'pages::login')
     ->middleware('guest')

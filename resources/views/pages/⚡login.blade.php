@@ -8,32 +8,32 @@ use Livewire\Component;
 
 new class extends Component
 {
-    public string $email = '';
+    public string $login = '';
     public string $password = '';
     public bool $remember = false;
 
-    public function login(): void
+    public function authenticate(): void
     {
         $this->validate([
-            'email' => ['required', 'string', 'email'],
+            'login' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        $throttleKey = Str::transliterate(Str::lower($this->email).'|'.request()->ip());
+        $throttleKey = Str::transliterate(Str::lower($this->login).'|'.request()->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
             throw ValidationException::withMessages([
-                'email' => "Too many login attempts. Try again in {$seconds} seconds.",
+                'login' => "Too many login attempts. Try again in {$seconds} seconds.",
             ]);
         }
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (! Auth::attempt(['login' => $this->login, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($throttleKey);
 
             throw ValidationException::withMessages([
-                'email' => 'These credentials do not match our records.',
+                'login' => 'These credentials do not match our records.',
             ]);
         }
 
@@ -49,18 +49,18 @@ new class extends Component
     <div class="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 shadow-sm space-y-6">
         <h1 class="text-xl font-semibold text-gray-900 text-center">Sign in</h1>
 
-        <form wire:submit="login" class="space-y-4">
+        <form wire:submit.prevent="authenticate" class="space-y-4">
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <label for="login" class="block text-sm font-medium text-gray-700">Login</label>
                 <input
-                    id="email"
-                    type="email"
-                    wire:model="email"
+                    id="login"
+                    type="text"
+                    wire:model="login"
                     autocomplete="username"
                     autofocus
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
-                @error('email')
+                @error('login')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
