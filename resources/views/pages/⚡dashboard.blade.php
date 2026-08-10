@@ -24,5 +24,12 @@ new class extends Component
         >
             Increment
         </button>
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="text-sm text-gray-500 hover:text-gray-700 underline">
+                Sign out
+            </button>
+        </form>
     </div>
 </div>
