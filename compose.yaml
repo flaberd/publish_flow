@@ -1,0 +1,114 @@
+# Production stack for publish_flow.
+#
+# Lives on the EC2 host at /opt/publish-flow/compose.yaml (see
+# docs/deployment.md). Deployed with:
+#   docker compose --env-file .deploy.env pull
+#   docker compose --env-file .deploy.env up -d
+#
+# --env-file .deploy.env supplies APP_IMAGE / NGINX_IMAGE for the ${...}
+# interpolation below. It is deliberately NOT the project's default `.env`
+# file — that name is reserved for the real Laravel/MySQL secrets file
+# referenced via `env_file:` on the services below, and Compose must not
+# mix the two up.
+#
+# `docker compose down -v` must never be used against this file — it would
+# delete the mysql-data named volume. Use `docker compose down` (no -v) or
+# `docker compose stop` instead.
+
+services:
+  app:
+    image: ${APP_IMAGE}
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./storage/app:/var/www/html/storage/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal
+
+  queue:
+    image: ${APP_IMAGE}
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=1800
+    env_file:
+      - .env
+    volumes:
+      - ./storage/app:/var/www/html/storage/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal
+
+  scheduler:
+    image: ${APP_IMAGE}
+    restart: unless-stopped
+    command: php artisan schedule:work
+    env_file:
+      - .env
+    volumes:
+      - ./storage/app:/var/www/html/storage/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal
+
+  nginx:
+    image: ${NGINX_IMAGE}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./storage/app/public:/var/www/html/storage/app/public:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./certbot-webroot:/var/www/certbot:ro
+    depends_on:
+      - app
+    networks:
+      - internal
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - .env
+    # MySQL's own bootstrap variables (MYSQL_DATABASE, MYSQL_USER,
+    # MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD) are read from the same .env file
+    # — see docs/deployment.md for how they map onto Laravel's DB_* keys.
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # No `ports:` mapping — MySQL is reachable only from other containers on
+    # the `internal` network, never from the host or the internet.
+    healthcheck:
+      # `$$MYSQL_ROOT_PASSWORD` (double $) is Compose's escape for a literal
+      # `$` — it must NOT be interpolated by Compose itself (that would need
+      # the secret in .deploy.env), only by the container's own shell, which
+      # gets MYSQL_ROOT_PASSWORD from env_file at runtime.
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  # MySQL data: a Docker-managed named volume. Survives `docker compose
+  # down`, container recreation and image updates — only removed by an
+  # explicit `docker volume rm` or `down -v`, neither of which the
+  # deployment pipeline ever runs.
+  mysql-data:
