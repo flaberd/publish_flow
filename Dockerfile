@@ -48,26 +48,16 @@ FROM php:8.5-fpm-bookworm AS app
 ARG APP_UID=1000
 ARG APP_GID=1000
 
-# Dev packages (-dev) are kept rather than purged after the extension build:
-# purging them with --auto-remove risks apt also removing the runtime .so
-# libraries the compiled extensions link against, since Debian package names
-# for the runtime libs vary by release. Trading a larger image for a build
-# that doesn't silently break gd/zip/intl at runtime.
-#
-# opcache is installed in its own docker-php-ext-install call, after the
-# rest: bundled into the combined -j$(nproc) install with the others it
-# intermittently fails at `make install` with "cp: cannot stat 'modules/*'"
-# (opcache's out-of-tree extension build racing the others under parallel
-# make) — isolating it avoids that.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libzip-dev \
-        libpng-dev \
-        libjpeg62-turbo-dev \
-        libfreetype6-dev \
-        libicu-dev \
-        libonig-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" \
+# docker-php-ext-install (with or without batching) fails on this base image
+# specifically on opcache: `make install` errors with "cp: cannot stat
+# 'modules/*'" right after a clean "Build complete" — a build-path issue in
+# opcache's own out-of-tree extension build, not a parallelism problem.
+# mlocati/docker-php-extension-installer is the standard, battle-tested
+# replacement: it resolves apt build-dependencies per extension itself (no
+# manual libzip-dev/libpng-dev/... list to maintain) and avoids this class
+# of failure.
+ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN install-php-extensions \
         pdo_mysql \
         mbstring \
         exif \
@@ -76,8 +66,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gd \
         zip \
         intl \
-    && docker-php-ext-install opcache \
-    && rm -rf /var/lib/apt/lists/*
+        opcache
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-app.ini
 COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-app.conf
