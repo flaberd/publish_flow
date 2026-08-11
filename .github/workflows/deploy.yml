@@ -108,6 +108,16 @@ jobs:
             set -euo pipefail
             cd "$DEPLOY_PATH"
 
+            # Rollback for this project doesn't need to be instant (see
+            # docs/deployment.md, "Rollback strategy") — GHCR keeps every
+            # sha-<commit> tag forever, so an older tag can always be
+            # re-pulled (or the commit rebuilt) on demand. That means the
+            # EC2 host has no reason to hoard every image it has ever
+            # pulled, so prune anything no running container currently
+            # uses right before pulling the new one, to keep the host's
+            # disk from silently filling up over time.
+            docker image prune -af
+
             # .deploy.env only records which image tags are currently
             # deployed (not a secret) — it is separate from the persistent
             # .env file, which this script never touches, reads or writes.
@@ -148,6 +158,7 @@ jobs:
 
             docker compose --env-file .deploy.env exec -T app php artisan optimize
 
-            # Deliberately nothing else here: no `down`, no `-v`, no image
-            # pruning. Old image cleanup is a separate, explicit maintenance
-            # task (see docs/deployment.md), never part of this pipeline.
+            # Deliberately nothing else here: no `down`, no `-v`. Image
+            # cleanup already happened above, before the pull; nothing
+            # about the running containers, volumes or the database is
+            # ever touched by this pipeline.
