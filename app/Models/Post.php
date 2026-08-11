@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['caption', 'media_disk', 'media_path', 'media_type', 'scheduled_at', 'status'])]
+#[Fillable(['caption', 'media_disk', 'media_path', 'media_type', 'scheduled_at', 'published_at', 'media_deleted_at', 'status'])]
 class Post extends Model
 {
     const STATUS_SCHEDULED = 'scheduled';
@@ -24,6 +24,8 @@ class Post extends Model
     {
         return [
             'scheduled_at' => 'datetime',
+            'published_at' => 'datetime',
+            'media_deleted_at' => 'datetime',
         ];
     }
 

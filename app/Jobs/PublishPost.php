@@ -49,11 +49,11 @@ class PublishPost implements ShouldQueue
         }
 
         $statuses = $this->post->socialAccounts()->pluck('post_social_accounts.status');
+        $published = $statuses->contains(PostSocialAccount::STATUS_PUBLISHED);
 
         $this->post->update([
-            'status' => $statuses->contains(PostSocialAccount::STATUS_PUBLISHED)
-                ? Post::STATUS_PUBLISHED
-                : Post::STATUS_FAILED,
+            'status' => $published ? Post::STATUS_PUBLISHED : Post::STATUS_FAILED,
+            'published_at' => $published ? now() : null,
         ]);
     }
 }
