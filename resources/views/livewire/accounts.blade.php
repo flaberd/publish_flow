@@ -1,7 +1,5 @@
 <div class="flex min-h-screen flex-col bg-black text-white" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);">
     <header>
-        <livewire:workspace-switcher />
-
         <div class="flex items-center gap-3 px-4 pb-4 pt-3">
             <a
                 href="{{ route('dashboard') }}"
