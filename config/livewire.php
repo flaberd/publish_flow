@@ -31,16 +31,15 @@ return [
 
     'component_namespaces' => [
         'layouts' => resource_path('views/layouts'),
-        'pages' => resource_path('views/pages'),
     ],
 
     /*
     |---------------------------------------------------------------------------
     | Page Layout
     |---------------------------------------------------------------------------
-    | The view that will be used as the layout when rendering a single component as
-    | an entire page via `Route::livewire('/post/create', 'pages::create-post')`.
-    | In this case, the content of pages::create-post will render into $slot.
+    | The view that will be used as the layout when rendering a component as an
+    | entire page via `Route::livewire('/post/create', CreatePost::class)`. In
+    | this case, the content of the component's view will render into $slot.
     |
     */
 
@@ -66,11 +65,15 @@ return [
     | You can configure the component type (sfc, mfc, class) and whether to use
     | the high-voltage (⚡) emoji as a prefix in the sfc|mfc component names.
     |
+    | This project keeps the PHP class and the Blade view in separate files, so
+    | new components default to 'class' (a class in app/Livewire and a matching
+    | view in resources/views/livewire) rather than a single-file component.
+    |
     */
 
     'make_command' => [
-        'type' => 'sfc', // Options: 'sfc', 'mfc', 'class'
-        'emoji' => true, // Options: true, false
+        'type' => 'class', // Options: 'sfc', 'mfc', 'class'
+        'emoji' => false, // Options: true, false
         'with' => [
             'js' => false,
             'css' => false,
