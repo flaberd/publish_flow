@@ -20,3 +20,12 @@ Wire up page-level components in `routes/web.php` with
 `config/livewire.php` reflects this: `make_command.type` is `class` (not
 `sfc`), so `php artisan make:livewire Foo` scaffolds the two-file form by
 default.
+
+## No hardcoded domains, URLs, or other deployment-specific values
+
+This repository is public, and other people run their own copy of it.
+Never commit a real domain, hostname, callback/redirect URL, or any other
+environment-specific value into the repo — not in code, config, docs, or
+examples. Always source these from environment variables (`.env`, read via
+`env()` in `config/*.php`), and use inert placeholders like `example.com`
+in example files (`.env.example`, `.env.production.example`) and docs.

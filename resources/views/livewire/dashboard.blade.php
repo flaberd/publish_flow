@@ -48,7 +48,14 @@
 
     {{-- Reserved space for the primary navigation menu (5 items) --}}
     <nav class="grid grid-cols-5 border-t border-white/10 px-2 py-3">
-        @for ($i = 1; $i <= 5; $i++)
+        <a href="{{ route('accounts') }}" wire:navigate class="flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-6 w-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m6.531 4.132a4.5 4.5 0 0 1-1.242-7.244l4.5-4.5a4.5 4.5 0 0 1 6.364 6.364l-1.757 1.757" />
+            </svg>
+            <span class="text-[11px]">Accounts</span>
+        </a>
+
+        @for ($i = 2; $i <= 5; $i++)
             <button type="button" class="flex flex-col items-center gap-1 text-gray-500">
                 <span class="h-6 w-6 rounded-md border border-current/40"></span>
                 <span class="text-[11px]">Item {{ $i }}</span>

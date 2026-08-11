@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'instagram' => [
+        'client_id' => env('INSTAGRAM_CLIENT_ID'),
+        'client_secret' => env('INSTAGRAM_CLIENT_SECRET'),
+        'graph_version' => env('INSTAGRAM_GRAPH_VERSION', 'v21.0'),
+    ],
+
 ];
