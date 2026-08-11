@@ -14,6 +14,8 @@ class Post extends Model
 
     const STATUS_PUBLISHED = 'published';
 
+    const STATUS_FAILED = 'failed';
+
     const MEDIA_TYPE_IMAGE = 'image';
 
     const MEDIA_TYPE_VIDEO = 'video';
@@ -34,7 +36,7 @@ class Post extends Model
     {
         return $this->belongsToMany(SocialAccount::class, 'post_social_accounts')
             ->using(PostSocialAccount::class)
-            ->withPivot('settings')
+            ->withPivot(['settings', 'status', 'remote_id', 'published_at', 'error'])
             ->withTimestamps();
     }
 }
