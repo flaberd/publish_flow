@@ -57,11 +57,13 @@
             @endforelse
         </div>
 
-        <a
-            href="{{ route('instagram.connect') }}"
-            class="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 px-4 py-3 text-sm font-semibold text-white"
-        >
-            Connect Instagram
-        </a>
+        @unless ($hasInstagram)
+            <a
+                href="{{ route('instagram.connect') }}"
+                class="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 px-4 py-3 text-sm font-semibold text-white"
+            >
+                Connect Instagram
+            </a>
+        @endunless
     </main>
 </div>

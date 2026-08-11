@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\SocialAccount;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -11,9 +12,12 @@ class Accounts extends Component
     {
         $workspace = Auth::user()->currentWorkspace;
 
+        $accounts = $workspace?->socialAccounts()->orderBy('provider')->get() ?? collect();
+
         return [
             'workspace' => $workspace,
-            'accounts' => $workspace?->socialAccounts()->orderBy('provider')->get() ?? collect(),
+            'accounts' => $accounts,
+            'hasInstagram' => $accounts->contains('provider', SocialAccount::PROVIDER_INSTAGRAM),
         ];
     }
 
