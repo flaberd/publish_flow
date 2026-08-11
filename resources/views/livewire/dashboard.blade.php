@@ -31,10 +31,10 @@
         </div>
 
         <div class="grid grid-cols-7">
-            @foreach ($weeks as $week)
-                @foreach ($week as $day)
+            @foreach ($weeks as $weekIndex => $week)
+                @foreach ($week as $dayIndex => $day)
                     <div @class([
-                        'flex items-center justify-center border-b border-r border-white/5 py-5',
+                        'flex flex-col items-center gap-1 border-b border-r border-white/5 py-3',
                         'bg-purple-950/10' => ! $day['inCurrentMonth'],
                     ])>
                         <span @class([
@@ -44,6 +44,22 @@
                         ])>
                             {{ $day['date'] }}
                         </span>
+
+                        @if ($day['providerCounts']->isNotEmpty())
+                            <div class="flex flex-wrap items-center justify-center gap-1">
+                                @foreach ($day['providerCounts'] as $provider => $count)
+                                    <span class="relative" wire:key="day-{{ $weekIndex }}-{{ $dayIndex }}-{{ $provider }}">
+                                        <x-social-icon :provider="$provider" class="h-3.5 w-3.5" />
+
+                                        @if ($count > 1)
+                                            <span class="absolute -right-1 -top-1 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-blue-600 text-[7px] font-bold leading-none text-white">
+                                                {{ $count }}
+                                            </span>
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             @endforeach

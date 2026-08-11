@@ -2,8 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Post;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -12,6 +14,16 @@ class Dashboard extends Component
     {
         $today = Carbon::today();
         $cursor = $today->copy()->startOfMonth()->startOfWeek(Carbon::SUNDAY);
+        $gridStart = $cursor->copy();
+        $gridEnd = $cursor->copy()->addWeeks(6)->subDay();
+
+        $workspace = Auth::user()->currentWorkspace;
+
+        $postsByDay = ($workspace?->posts()
+            ->with('socialAccounts')
+            ->whereBetween('scheduled_at', [$gridStart, $gridEnd->copy()->endOfDay()])
+            ->get() ?? collect())
+            ->groupBy(fn (Post $post) => $post->scheduled_at->toDateString());
 
         $weeks = [];
 
@@ -19,10 +31,13 @@ class Dashboard extends Component
             $days = [];
 
             for ($day = 0; $day < 7; $day++) {
+                $dayPosts = $postsByDay->get($cursor->toDateString(), collect());
+
                 $days[] = [
                     'date' => $cursor->day,
                     'inCurrentMonth' => $cursor->month === $today->month,
                     'isToday' => $cursor->isSameDay($today),
+                    'providerCounts' => $dayPosts->flatMap->socialAccounts->countBy('provider'),
                 ];
 
                 $cursor->addDay();
@@ -36,6 +51,12 @@ class Dashboard extends Component
             'weeks' => $weeks,
             'monthLabel' => $today->format('F Y'),
         ];
+    }
+
+    #[On('post-published')]
+    public function refreshCalendar(): void
+    {
+        // Re-rendering picks up the newly created post; no state to change here.
     }
 
     public function logout(): void

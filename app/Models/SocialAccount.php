@@ -36,7 +36,7 @@ class SocialAccount extends Model
     {
         return $this->belongsToMany(Post::class, 'post_social_accounts')
             ->using(PostSocialAccount::class)
-            ->withPivot('settings')
+            ->withPivot(['settings', 'status', 'remote_id', 'published_at', 'error'])
             ->withTimestamps();
     }
 }

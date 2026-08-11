@@ -53,7 +53,9 @@ return [
         'videos' => [
             'driver' => 'local',
             'root' => env('VIDEO_STORAGE_PATH', storage_path('app/videos')),
+            'url' => '/media/videos',
             'visibility' => 'private',
+            'serve' => true,
             'throw' => false,
             'report' => false,
         ],

@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Jobs\PublishPost;
 use App\Models\Post;
+use App\Models\PostSocialAccount;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Carbon\Carbon;
@@ -99,6 +101,7 @@ class PublishDialog extends Component
         $path = $this->media->store('posts', $disk);
 
         $scheduledAt = $this->scheduledAt();
+        $isFuture = $scheduledAt->greaterThan(now());
 
         $post = $workspace->posts()->create([
             'caption' => $this->caption,
@@ -106,20 +109,23 @@ class PublishDialog extends Component
             'media_path' => $path,
             'media_type' => $isVideo ? Post::MEDIA_TYPE_VIDEO : Post::MEDIA_TYPE_IMAGE,
             'scheduled_at' => $scheduledAt,
-            'status' => $scheduledAt->greaterThan(now()) ? Post::STATUS_SCHEDULED : Post::STATUS_PUBLISHED,
+            'status' => Post::STATUS_SCHEDULED,
         ]);
 
         foreach ($accounts as $account) {
             $post->socialAccounts()->attach($account->id, [
                 'settings' => $this->settings[$account->id] ?? [],
+                'status' => PostSocialAccount::STATUS_PENDING,
             ]);
         }
+
+        PublishPost::dispatch($post)->delay($scheduledAt);
 
         $this->showModal = false;
 
         $this->dispatch('post-published');
 
-        session()->flash('status', $scheduledAt->greaterThan(now()) ? 'Post scheduled.' : 'Post published.');
+        session()->flash('status', $isFuture ? 'Post scheduled.' : 'Post is publishing now.');
     }
 
     public function isInstagram(SocialAccount $account): bool
