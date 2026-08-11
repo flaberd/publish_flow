@@ -86,6 +86,26 @@ class PublishDialogTest extends TestCase
         ]);
     }
 
+    public function test_it_accepts_videos_larger_than_livewires_12mb_default(): void
+    {
+        $user = User::factory()->create();
+        $workspace = $user->workspaces()->create(['name' => 'W1']);
+        $user->update(['current_workspace_id' => $workspace->id]);
+
+        $workspace->socialAccounts()->create([
+            'provider' => SocialAccount::PROVIDER_INSTAGRAM,
+            'provider_user_id' => '123',
+            'username' => 'testig',
+            'access_token' => 'x',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(PublishDialog::class)
+            ->call('openModal')
+            ->set('media', UploadedFile::fake()->create('video.mp4', 20_000, 'video/mp4'))
+            ->assertHasNoErrors('media');
+    }
+
     public function test_publish_dialog_queues_a_delayed_job_for_a_future_post(): void
     {
         Queue::fake();
