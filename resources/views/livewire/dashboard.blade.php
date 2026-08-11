@@ -1,18 +1,22 @@
 <div class="flex min-h-screen flex-col bg-black text-white" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);">
-    {{-- Header: reserved for calendar controls to be added later --}}
-    <header class="flex items-center justify-between px-4 pb-4 pt-6">
-        <h1 class="text-lg font-semibold">{{ $monthLabel }}</h1>
+    {{-- Header: workspace switcher, plus room for more calendar controls later --}}
+    <header>
+        <livewire:workspace-switcher />
 
-        <button
-            type="button"
-            wire:click="logout"
-            class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:text-white"
-            aria-label="Sign out"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3M16 17l5-5-5-5M21 12H9" />
-            </svg>
-        </button>
+        <div class="flex items-center justify-between px-4 pb-4 pt-3">
+            <h1 class="text-lg font-semibold">{{ $monthLabel }}</h1>
+
+            <button
+                type="button"
+                wire:click="logout"
+                class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:text-white"
+                aria-label="Sign out"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3M16 17l5-5-5-5M21 12H9" />
+                </svg>
+            </button>
+        </div>
     </header>
 
     <main class="flex-1 overflow-y-auto">
