@@ -20,6 +20,10 @@
     </header>
 
     <main class="flex-1 overflow-y-auto">
+        @if (session('status'))
+            <div class="mx-4 mt-4 rounded-lg bg-green-600/20 px-3 py-2 text-sm text-green-300">{{ session('status') }}</div>
+        @endif
+
         <div class="grid grid-cols-7 bg-gradient-to-r from-purple-950/50 via-purple-950/20 to-black">
             @foreach ($weekDays as $weekDay)
                 <div class="py-3 text-center text-sm text-gray-400">{{ $weekDay }}</div>
@@ -55,7 +59,9 @@
             <span class="text-[11px]">Accounts</span>
         </a>
 
-        @for ($i = 2; $i <= 5; $i++)
+        <livewire:publish-dialog />
+
+        @for ($i = 3; $i <= 5; $i++)
             <button type="button" class="flex flex-col items-center gap-1 text-gray-500">
                 <span class="h-6 w-6 rounded-md border border-current/40"></span>
                 <span class="text-[11px]">Item {{ $i }}</span>

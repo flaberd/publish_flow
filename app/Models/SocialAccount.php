@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['provider', 'provider_user_id', 'username', 'name', 'avatar_url', 'access_token', 'token_expires_at'])]
 #[Hidden(['access_token'])]
@@ -29,5 +30,13 @@ class SocialAccount extends Model
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    public function posts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'post_social_accounts')
+            ->using(PostSocialAccount::class)
+            ->withPivot('settings')
+            ->withTimestamps();
     }
 }
