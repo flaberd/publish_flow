@@ -1,35 +1,104 @@
 <?php
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 new class extends Component
 {
-    public int $count = 0;
-
-    public function increment(): void
+    public function with(): array
     {
-        $this->count++;
+        $today = Carbon::today();
+        $cursor = $today->copy()->startOfMonth()->startOfWeek(Carbon::SUNDAY);
+
+        $weeks = [];
+
+        for ($week = 0; $week < 6; $week++) {
+            $days = [];
+
+            for ($day = 0; $day < 7; $day++) {
+                $days[] = [
+                    'date' => $cursor->day,
+                    'inCurrentMonth' => $cursor->month === $today->month,
+                    'isToday' => $cursor->isSameDay($today),
+                ];
+
+                $cursor->addDay();
+            }
+
+            $weeks[] = $days;
+        }
+
+        return [
+            'weekDays' => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            'weeks' => $weeks,
+            'monthLabel' => $today->format('F Y'),
+        ];
+    }
+
+    public function logout(): void
+    {
+        Auth::logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        $this->redirect(route('login'), navigate: false);
     }
 };
 ?>
 
-<div class="min-h-screen flex items-center justify-center bg-gray-50">
-    <div class="rounded-lg border border-gray-200 bg-white p-8 shadow-sm text-center space-y-4">
-        <h1 class="text-xl font-semibold text-gray-900">Livewire + Tailwind</h1>
-        <p class="text-gray-600">Count: <span class="font-mono">{{ $count }}</span></p>
+<div class="flex min-h-screen flex-col bg-black text-white" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);">
+    {{-- Header: reserved for calendar controls to be added later --}}
+    <header class="flex items-center justify-between px-4 pb-4 pt-6">
+        <h1 class="text-lg font-semibold">{{ $monthLabel }}</h1>
+
         <button
             type="button"
-            wire:click="increment"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+            wire:click="logout"
+            class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 hover:text-white"
+            aria-label="Sign out"
         >
-            Increment
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="h-5 w-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3M16 17l5-5-5-5M21 12H9" />
+            </svg>
         </button>
+    </header>
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="text-sm text-gray-500 hover:text-gray-700 underline">
-                Sign out
+    <main class="flex-1 overflow-y-auto">
+        <div class="grid grid-cols-7 bg-gradient-to-r from-purple-950/50 via-purple-950/20 to-black">
+            @foreach ($weekDays as $weekDay)
+                <div class="py-3 text-center text-sm text-gray-400">{{ $weekDay }}</div>
+            @endforeach
+        </div>
+
+        <div class="grid grid-cols-7">
+            @foreach ($weeks as $week)
+                @foreach ($week as $day)
+                    <div @class([
+                        'flex items-center justify-center border-b border-r border-white/5 py-5',
+                        'bg-purple-950/10' => ! $day['inCurrentMonth'],
+                    ])>
+                        <span @class([
+                            'flex h-9 w-9 items-center justify-center rounded-full text-base',
+                            'text-gray-600' => ! $day['inCurrentMonth'],
+                            'bg-blue-600 font-semibold text-white' => $day['isToday'],
+                        ])>
+                            {{ $day['date'] }}
+                        </span>
+                    </div>
+                @endforeach
+            @endforeach
+        </div>
+    </main>
+
+    {{-- Reserved space for the primary navigation menu (5 items) --}}
+    <nav class="grid grid-cols-5 border-t border-white/10 px-2 py-3">
+        @for ($i = 1; $i <= 5; $i++)
+            <button type="button" class="flex flex-col items-center gap-1 text-gray-500">
+                <span class="h-6 w-6 rounded-md border border-current/40"></span>
+                <span class="text-[11px]">Item {{ $i }}</span>
             </button>
-        </form>
-    </div>
+        @endfor
+    </nav>
 </div>
