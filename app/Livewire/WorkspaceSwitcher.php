@@ -13,6 +13,10 @@ class WorkspaceSwitcher extends Component
 
     public string $newWorkspaceName = '';
 
+    public ?int $editingWorkspaceId = null;
+
+    public string $editingName = '';
+
     public function mount(): void
     {
         $user = $this->user();
@@ -38,6 +42,7 @@ class WorkspaceSwitcher extends Component
     public function openModal(): void
     {
         $this->newWorkspaceName = '';
+        $this->editingWorkspaceId = null;
         $this->resetValidation();
         $this->showModal = true;
     }
@@ -45,6 +50,35 @@ class WorkspaceSwitcher extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
+    }
+
+    public function startEditing(int $workspaceId): void
+    {
+        $workspace = $this->user()->workspaces()->findOrFail($workspaceId);
+
+        $this->editingWorkspaceId = $workspace->id;
+        $this->editingName = $workspace->name;
+        $this->resetValidation();
+    }
+
+    public function cancelEditing(): void
+    {
+        $this->editingWorkspaceId = null;
+        $this->editingName = '';
+        $this->resetValidation();
+    }
+
+    public function renameWorkspace(): void
+    {
+        $this->validate([
+            'editingName' => ['required', 'string', 'max:255'],
+        ], attributes: ['editingName' => 'name']);
+
+        $workspace = $this->user()->workspaces()->findOrFail($this->editingWorkspaceId);
+        $workspace->update(['name' => $this->editingName]);
+
+        $this->editingWorkspaceId = null;
+        $this->editingName = '';
     }
 
     public function selectWorkspace(int $workspaceId): void
