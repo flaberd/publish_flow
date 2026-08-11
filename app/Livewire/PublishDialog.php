@@ -25,7 +25,9 @@ class PublishDialog extends Component
 
     public string $scheduledDate = '';
 
-    public string $scheduledTime = '';
+    public string $scheduledHour = '';
+
+    public string $scheduledMinute = '';
 
     /** @var array<int, array<string, mixed>> */
     public array $settings = [];
@@ -47,7 +49,8 @@ class PublishDialog extends Component
         $this->reset(['media', 'caption', 'settings']);
         $this->enabledAccountIds = $accounts->pluck('id')->all();
         $this->scheduledDate = now()->format('Y-m-d');
-        $this->scheduledTime = now()->format('H:i');
+        $this->scheduledHour = (string) now()->hour;
+        $this->scheduledMinute = (string) now()->minute;
         $this->resetValidation();
         $this->showModal = true;
     }
@@ -81,7 +84,8 @@ class PublishDialog extends Component
             'media' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,mp4,mov,webm', 'max:102400'],
             'caption' => ['nullable', 'string', 'max:2200'],
             'scheduledDate' => ['required', 'date'],
-            'scheduledTime' => ['required', 'date_format:H:i'],
+            'scheduledHour' => ['required', 'integer', 'between:0,23'],
+            'scheduledMinute' => ['required', 'integer', 'between:0,59'],
             'enabledAccountIds' => ['required', 'array', 'min:1'],
         ], attributes: [
             'media' => 'content',
@@ -126,10 +130,11 @@ class PublishDialog extends Component
     private function scheduledAt(): Carbon
     {
         $date = $this->scheduledDate ?: now()->format('Y-m-d');
-        $time = $this->scheduledTime ?: now()->format('H:i');
+        $hour = str_pad($this->scheduledHour !== '' ? $this->scheduledHour : now()->format('H'), 2, '0', STR_PAD_LEFT);
+        $minute = str_pad($this->scheduledMinute !== '' ? $this->scheduledMinute : now()->format('i'), 2, '0', STR_PAD_LEFT);
 
         try {
-            return Carbon::createFromFormat('Y-m-d H:i', "{$date} {$time}");
+            return Carbon::createFromFormat('Y-m-d H:i', "{$date} {$hour}:{$minute}");
         } catch (\Exception) {
             return now();
         }
