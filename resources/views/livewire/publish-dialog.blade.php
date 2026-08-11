@@ -162,12 +162,12 @@
                         <div class="flex gap-2">
                             <input
                                 type="date"
-                                wire:model="scheduledDate"
+                                wire:model.live="scheduledDate"
                                 class="min-w-0 flex-1 rounded-lg border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
                             >
                             <input
                                 type="time"
-                                wire:model="scheduledTime"
+                                wire:model.live="scheduledTime"
                                 class="min-w-0 flex-1 rounded-lg border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
                             >
                         </div>
