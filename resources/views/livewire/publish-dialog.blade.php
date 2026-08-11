@@ -165,17 +165,37 @@
                                 wire:model.live="scheduledDate"
                                 class="min-w-0 flex-1 rounded-lg border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
                             >
-                            <input
-                                type="time"
-                                wire:model.live="scheduledTime"
-                                class="min-w-0 flex-1 rounded-lg border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
+
+                            <select
+                                wire:model.live="scheduledHour"
+                                aria-label="Hour"
+                                class="min-w-0 rounded-lg border-white/10 bg-white/5 px-2 py-2 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
                             >
+                                @foreach (range(0, 23) as $hour)
+                                    <option value="{{ $hour }}">{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}</option>
+                                @endforeach
+                            </select>
+
+                            <span class="flex items-center text-gray-500">:</span>
+
+                            <select
+                                wire:model.live="scheduledMinute"
+                                aria-label="Minute"
+                                class="min-w-0 rounded-lg border-white/10 bg-white/5 px-2 py-2 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
+                            >
+                                @foreach (range(0, 59) as $minute)
+                                    <option value="{{ $minute }}">{{ str_pad($minute, 2, '0', STR_PAD_LEFT) }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         @error('scheduledDate')
                             <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
                         @enderror
-                        @error('scheduledTime')
+                        @error('scheduledHour')
+                            <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                        @enderror
+                        @error('scheduledMinute')
                             <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
                         @enderror
                     </div>

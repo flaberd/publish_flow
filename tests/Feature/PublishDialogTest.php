@@ -53,7 +53,8 @@ class PublishDialogTest extends TestCase
             ->set('media', UploadedFile::fake()->image('photo.jpg'))
             ->set('caption', 'Hello world')
             ->set('scheduledDate', now()->format('Y-m-d'))
-            ->set('scheduledTime', now()->format('H:i'))
+            ->set('scheduledHour', (string) now()->hour)
+            ->set('scheduledMinute', (string) now()->minute)
             ->call('submit')
             ->assertSet('showModal', false);
 
@@ -88,7 +89,8 @@ class PublishDialogTest extends TestCase
             ->call('openModal')
             ->set('media', UploadedFile::fake()->create('video.mp4', 500, 'video/mp4'))
             ->set('scheduledDate', $future->format('Y-m-d'))
-            ->set('scheduledTime', $future->format('H:i'))
+            ->set('scheduledHour', (string) $future->hour)
+            ->set('scheduledMinute', (string) $future->minute)
             ->call('submit');
 
         $this->assertDatabaseHas('posts', [
