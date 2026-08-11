@@ -1,13 +1,15 @@
 <?php
 
+use App\Livewire\Dashboard;
+use App\Livewire\Login;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::livewire('/', 'pages::dashboard')
+Route::livewire('/', Dashboard::class)
     ->middleware('auth')
     ->name('dashboard');
 
-Route::livewire('/login', 'pages::login')
+Route::livewire('/login', Login::class)
     ->middleware('guest')
     ->name('login');
 
