@@ -41,4 +41,9 @@ return [
         'graph_version' => env('INSTAGRAM_GRAPH_VERSION', 'v21.0'),
     ],
 
+    'tiktok' => [
+        'client_key' => env('TIKTOK_CLIENT_KEY'),
+        'client_secret' => env('TIKTOK_CLIENT_SECRET'),
+    ],
+
 ];

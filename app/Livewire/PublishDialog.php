@@ -133,6 +133,11 @@ class PublishDialog extends Component
         return $account->provider === SocialAccount::PROVIDER_INSTAGRAM;
     }
 
+    public function isTiktok(SocialAccount $account): bool
+    {
+        return $account->provider === SocialAccount::PROVIDER_TIKTOK;
+    }
+
     private function scheduledAt(): Carbon
     {
         $date = $this->scheduledDate ?: now()->format('Y-m-d');

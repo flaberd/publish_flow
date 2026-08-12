@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Instagram\OAuthController as InstagramOAuthController;
+use App\Http\Controllers\TikTok\OAuthController as TikTokOAuthController;
 use App\Livewire\Accounts;
 use App\Livewire\Dashboard;
 use App\Livewire\Login;
@@ -26,6 +27,14 @@ Route::get('/instagram/connect', [InstagramOAuthController::class, 'redirect'])
 Route::get('/instagram/callback', [InstagramOAuthController::class, 'callback'])
     ->middleware('auth')
     ->name('instagram.callback');
+
+Route::get('/tiktok/connect', [TikTokOAuthController::class, 'redirect'])
+    ->middleware('auth')
+    ->name('tiktok.connect');
+
+Route::get('/tiktok/callback', [TikTokOAuthController::class, 'callback'])
+    ->middleware('auth')
+    ->name('tiktok.callback');
 
 Route::post('/logout', function () {
     Auth::logout();

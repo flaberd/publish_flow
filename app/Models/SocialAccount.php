@@ -14,6 +14,8 @@ class SocialAccount extends Model
 {
     const PROVIDER_INSTAGRAM = 'instagram';
 
+    const PROVIDER_TIKTOK = 'tiktok';
+
     /**
      * Get the attributes that should be cast.
      *
@@ -25,6 +27,14 @@ class SocialAccount extends Model
             'access_token' => 'encrypted',
             'token_expires_at' => 'datetime',
         ];
+    }
+
+    public function providerLabel(): string
+    {
+        return match ($this->provider) {
+            self::PROVIDER_TIKTOK => 'TikTok',
+            default => ucfirst($this->provider),
+        };
     }
 
     public function workspace(): BelongsTo

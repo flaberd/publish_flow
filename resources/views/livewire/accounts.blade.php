@@ -37,8 +37,8 @@
                     @endif
 
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-medium text-white">{{ $account->username ?? $account->name ?? 'Instagram account' }}</p>
-                        <p class="text-xs text-gray-400">{{ ucfirst($account->provider) }}</p>
+                        <p class="truncate text-sm font-medium text-white">{{ $account->username ?? $account->name ?? $account->providerLabel().' account' }}</p>
+                        <p class="text-xs text-gray-400">{{ $account->providerLabel() }}</p>
                     </div>
 
                     <button
@@ -61,6 +61,15 @@
                 class="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 px-4 py-3 text-sm font-semibold text-white"
             >
                 Connect Instagram
+            </a>
+        @endunless
+
+        @unless ($hasTiktok)
+            <a
+                href="{{ route('tiktok.connect') }}"
+                class="mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-black to-pink-500 px-4 py-3 text-sm font-semibold text-white"
+            >
+                Connect TikTok
             </a>
         @endunless
     </main>

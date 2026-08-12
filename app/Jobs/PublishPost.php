@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\PostSocialAccount;
 use App\Models\SocialAccount;
 use App\Services\Instagram\InstagramPublishClient;
+use App\Services\TikTok\TikTokPublishClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -21,7 +22,7 @@ class PublishPost implements ShouldQueue
         public readonly Post $post,
     ) {}
 
-    public function handle(InstagramPublishClient $instagram): void
+    public function handle(InstagramPublishClient $instagram, TikTokPublishClient $tiktok): void
     {
         $pendingAccounts = $this->post->socialAccounts()
             ->wherePivot('status', PostSocialAccount::STATUS_PENDING)
@@ -31,6 +32,7 @@ class PublishPost implements ShouldQueue
             try {
                 $remoteId = match ($account->provider) {
                     SocialAccount::PROVIDER_INSTAGRAM => $instagram->publish($account, $this->post, $account->pivot->settings ?? []),
+                    SocialAccount::PROVIDER_TIKTOK => $tiktok->publish($account, $this->post, $account->pivot->settings ?? []),
                     default => throw new \RuntimeException("Publishing to [{$account->provider}] is not supported."),
                 };
 
