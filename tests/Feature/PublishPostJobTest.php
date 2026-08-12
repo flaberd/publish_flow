@@ -11,6 +11,7 @@ use App\Services\Instagram\InstagramPublishClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class PublishPostJobTest extends TestCase
@@ -127,10 +128,53 @@ class PublishPostJobTest extends TestCase
         }
     }
 
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function postTypeProvider(): array
+    {
+        return [
+            'feed defaults to a plain video post' => ['feed', 'VIDEO'],
+            'no setting at all also defaults to a plain video post' => ['', 'VIDEO'],
+            'reel maps to REELS' => ['reel', 'REELS'],
+            'story maps to STORIES' => ['story', 'STORIES'],
+        ];
+    }
+
+    #[DataProvider('postTypeProvider')]
+    public function test_it_sends_the_media_type_matching_the_chosen_post_type(string $postType, string $expectedMediaType): void
+    {
+        $capturedMediaType = null;
+
+        Http::fake(function ($request) use (&$capturedMediaType) {
+            if ($request->method() === 'GET') {
+                return Http::response(['status_code' => 'FINISHED']);
+            }
+
+            if (str_contains($request->url(), 'media_publish')) {
+                return Http::response(['id' => 'remote-1']);
+            }
+
+            $capturedMediaType = $request['media_type'];
+
+            return Http::response(['id' => 'container-1']);
+        });
+
+        $post = $this->pendingPost(
+            mediaType: Post::MEDIA_TYPE_VIDEO,
+            settings: $postType === '' ? [] : ['post_type' => $postType],
+        );
+
+        (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+
+        $this->assertSame($expectedMediaType, $capturedMediaType);
+    }
+
     private function pendingPost(
         string $mediaDisk = 'public',
         string $mediaPath = 'posts/photo.jpg',
         string $mediaType = Post::MEDIA_TYPE_IMAGE,
+        array $settings = [],
     ): Post {
         $user = User::factory()->create();
         $workspace = $user->workspaces()->create(['name' => 'W1']);
@@ -152,7 +196,7 @@ class PublishPostJobTest extends TestCase
         ]);
 
         $post->socialAccounts()->attach($account->id, [
-            'settings' => [],
+            'settings' => $settings,
             'status' => PostSocialAccount::STATUS_PENDING,
         ]);
 
