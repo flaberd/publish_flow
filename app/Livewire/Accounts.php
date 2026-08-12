@@ -18,6 +18,7 @@ class Accounts extends Component
             'workspace' => $workspace,
             'accounts' => $accounts,
             'hasInstagram' => $accounts->contains('provider', SocialAccount::PROVIDER_INSTAGRAM),
+            'hasTiktok' => $accounts->contains('provider', SocialAccount::PROVIDER_TIKTOK),
         ];
     }
 

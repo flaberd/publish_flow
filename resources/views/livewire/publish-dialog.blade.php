@@ -43,7 +43,7 @@
                                         wire:key="pub-account-{{ $account->id }}"
                                         class="flex flex-col items-center gap-1"
                                         aria-pressed="{{ $enabled ? 'true' : 'false' }}"
-                                        title="{{ $account->username ?? ucfirst($account->provider) }}"
+                                        title="{{ $account->username ?? $account->providerLabel() }}"
                                     >
                                         <span @class([
                                             'relative flex h-11 w-11 items-center justify-center rounded-full ring-2',
@@ -60,7 +60,7 @@
                                         </span>
 
                                         <span class="max-w-[4.5rem] truncate text-[11px] text-gray-400">
-                                            {{ $account->username ?? ucfirst($account->provider) }}
+                                            {{ $account->username ?? $account->providerLabel() }}
                                         </span>
                                     </button>
                                 @endforeach
@@ -134,8 +134,8 @@
                             @foreach ($enabledAccounts as $account)
                                 <div class="rounded-xl bg-white/5 px-3 py-3" wire:key="pub-settings-{{ $account->id }}">
                                     <p class="mb-2 text-xs font-medium text-gray-300">
-                                        {{ $account->username ?? ucfirst($account->provider) }}
-                                        <span class="text-gray-500">· {{ ucfirst($account->provider) }}</span>
+                                        {{ $account->username ?? $account->providerLabel() }}
+                                        <span class="text-gray-500">· {{ $account->providerLabel() }}</span>
                                     </p>
 
                                     @if ($this->isInstagram($account))
@@ -146,6 +146,16 @@
                                             <option value="feed">Feed post</option>
                                             <option value="reel">Reel</option>
                                             <option value="story">Story</option>
+                                        </select>
+                                    @elseif ($this->isTiktok($account))
+                                        <select
+                                            wire:model="settings.{{ $account->id }}.privacy_level"
+                                            class="w-full rounded-lg border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                            <option value="SELF_ONLY">Only me</option>
+                                            <option value="PUBLIC_TO_EVERYONE">Public</option>
+                                            <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
+                                            <option value="FOLLOWER_OF_CREATOR">Followers</option>
                                         </select>
                                     @else
                                         <p class="text-xs text-gray-500">No extra settings for this network.</p>

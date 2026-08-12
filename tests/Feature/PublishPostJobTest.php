@@ -8,6 +8,7 @@ use App\Models\PostSocialAccount;
 use App\Models\SocialAccount;
 use App\Models\User;
 use App\Services\Instagram\InstagramPublishClient;
+use App\Services\TikTok\TikTokPublishClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -34,7 +35,7 @@ class PublishPostJobTest extends TestCase
 
         $post = $this->pendingPost();
 
-        (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+        (new PublishPost($post))->handle(app(InstagramPublishClient::class), app(TikTokPublishClient::class));
 
         $this->assertSame(Post::STATUS_PUBLISHED, $post->fresh()->status);
 
@@ -52,7 +53,7 @@ class PublishPostJobTest extends TestCase
 
         $post = $this->pendingPost();
 
-        (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+        (new PublishPost($post))->handle(app(InstagramPublishClient::class), app(TikTokPublishClient::class));
 
         $this->assertSame(Post::STATUS_FAILED, $post->fresh()->status);
 
@@ -76,7 +77,7 @@ class PublishPostJobTest extends TestCase
 
         $post = $this->pendingPost();
 
-        (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+        (new PublishPost($post))->handle(app(InstagramPublishClient::class), app(TikTokPublishClient::class));
 
         $pivot = $post->socialAccounts()->first()->pivot;
         $this->assertSame(PostSocialAccount::STATUS_FAILED, $pivot->status);
@@ -118,7 +119,7 @@ class PublishPostJobTest extends TestCase
         );
 
         try {
-            (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+            (new PublishPost($post))->handle(app(InstagramPublishClient::class), app(TikTokPublishClient::class));
 
             $this->assertNotNull($capturedVideoUrl, 'video_url was never sent to Instagram.');
 
@@ -165,7 +166,7 @@ class PublishPostJobTest extends TestCase
             settings: $postType === '' ? [] : ['post_type' => $postType],
         );
 
-        (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+        (new PublishPost($post))->handle(app(InstagramPublishClient::class), app(TikTokPublishClient::class));
 
         $this->assertSame($expectedMediaType, $capturedMediaType);
     }
