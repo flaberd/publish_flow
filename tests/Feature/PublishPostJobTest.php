@@ -59,6 +59,31 @@ class PublishPostJobTest extends TestCase
         $this->assertNotNull($pivot->error);
     }
 
+    public function test_it_surfaces_instagrams_detailed_error_when_processing_fails(): void
+    {
+        Http::fake(function ($request) {
+            if ($request->method() === 'GET') {
+                return Http::response([
+                    'status_code' => 'ERROR',
+                    'status' => 'Video could not be downloaded from the provided URL.',
+                ]);
+            }
+
+            return Http::response(['id' => 'container-1']);
+        });
+
+        $post = $this->pendingPost();
+
+        (new PublishPost($post))->handle(app(InstagramPublishClient::class));
+
+        $pivot = $post->socialAccounts()->first()->pivot;
+        $this->assertSame(PostSocialAccount::STATUS_FAILED, $pivot->status);
+        $this->assertSame(
+            'Instagram failed to process the uploaded media: Video could not be downloaded from the provided URL.',
+            $pivot->error,
+        );
+    }
+
     private function pendingPost(): Post
     {
         $user = User::factory()->create();

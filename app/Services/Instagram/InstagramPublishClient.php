@@ -52,17 +52,21 @@ class InstagramPublishClient
     private function waitUntilReady(SocialAccount $account, string $containerId): void
     {
         for ($attempt = 0; $attempt < 15; $attempt++) {
-            $status = Http::get("https://graph.instagram.com/{$this->graphVersion}/{$containerId}", [
-                'fields' => 'status_code',
+            $response = Http::get("https://graph.instagram.com/{$this->graphVersion}/{$containerId}", [
+                'fields' => 'status_code,status',
                 'access_token' => $account->access_token,
-            ])->throw()->json('status_code');
+            ])->throw()->json();
+
+            $status = $response['status_code'] ?? null;
 
             if ($status === 'FINISHED') {
                 return;
             }
 
             if ($status === 'ERROR') {
-                throw new RuntimeException('Instagram failed to process the uploaded media.');
+                $detail = $response['status'] ?? 'Instagram did not provide further detail.';
+
+                throw new RuntimeException("Instagram failed to process the uploaded media: {$detail}");
             }
 
             sleep(2);
