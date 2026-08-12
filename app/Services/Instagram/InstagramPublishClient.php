@@ -6,7 +6,6 @@ use App\Models\Post;
 use App\Models\SocialAccount;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
 use RuntimeException;
 
 class InstagramPublishClient
@@ -103,7 +102,12 @@ class InstagramPublishClient
     private function mediaUrl(Post $post): string
     {
         if ($post->media_disk === 'videos') {
-            return URL::temporarySignedRoute('storage.videos', now()->addHours(2), ['path' => $post->media_path]);
+            // Storage::disk(...)->temporaryUrl() (not a manual URL::temporarySignedRoute
+            // call) is required here: the "serve" route this disk is exposed through
+            // validates against a *relative* signature, and only temporaryUrl() builds
+            // one — a directly-generated signed route defaults to signing the absolute
+            // URL, which that relative check can never match, so every request 404s.
+            return Storage::disk('videos')->temporaryUrl($post->media_path, now()->addHours(2));
         }
 
         return Storage::disk($post->media_disk)->url($post->media_path);
