@@ -5,6 +5,8 @@ use App\Http\Controllers\TikTok\OAuthController as TikTokOAuthController;
 use App\Livewire\Accounts;
 use App\Livewire\Dashboard;
 use App\Livewire\Login;
+use App\Livewire\Privacy;
+use App\Livewire\Terms;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +21,10 @@ Route::livewire('/accounts', Accounts::class)
 Route::livewire('/login', Login::class)
     ->middleware('guest')
     ->name('login');
+
+Route::livewire('/terms', Terms::class)->name('terms');
+
+Route::livewire('/privacy', Privacy::class)->name('privacy');
 
 Route::get('/instagram/connect', [InstagramOAuthController::class, 'redirect'])
     ->middleware('auth')
