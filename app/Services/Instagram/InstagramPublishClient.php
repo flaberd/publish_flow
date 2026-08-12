@@ -94,8 +94,9 @@ class InstagramPublishClient
         }
 
         return match ($settings['post_type'] ?? 'feed') {
+            'reel' => 'REELS',
             'story' => 'STORIES',
-            default => 'REELS',
+            default => 'VIDEO',
         };
     }
 
